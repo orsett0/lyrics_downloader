@@ -131,8 +131,14 @@ def main(artist: str, album: str, song: str, debug: bool):
         level = 'DEBUG' if debug else 'INFO'
     )
 
+    flag = False
+
     artist_page = getArtistPage(artist)
     albums_list = getAlbumsList(artist_page)
+
+    if len(albums_list) == 0:
+        logger.warning("No album found. Check your parameters.")
+        return
 
     for album_data in albums_list:
         if album is not None and getLinkName(album) != getLinkName(album_data['name']): continue
@@ -144,9 +150,13 @@ def main(artist: str, album: str, song: str, debug: bool):
         for song_data in songs:
             if song is not None and getLinkName(song) != getLinkName(song_data['name']): continue
             logger.debug(f"Downloading song {song_data['name']}")
+            flag = True
 
             lyrics = downloadSong(song_data['link'])
             with open(f"lyrics/{artist}/{album_data['name']}/{song_data['name']}.txt", 'w') as file:
                 file.write(lyrics)
+    
+    if not flag:
+        logger.warning("No song downloaded. Check your parameters.")
 
 if __name__ == '__main__': main()
