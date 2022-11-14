@@ -98,20 +98,20 @@ def downloadSong(song_page_link):
 @click.option(
     "--artist",
     "-a",
-    help = "Nome dell'artista",
+    help = "Artist's name",
     type = click.STRING
 )
 @click.option(
     "--album",
     "-A",
-    help = "Album da scaricare",
+    help = "album to download",
     type = click.STRING,
     default = None
 )
 @click.option(
     "--song",
     "-s",
-    help = "Canzone da scaricare",
+    help = "Song to download",
     type = click.STRING,
     default = None
 )
