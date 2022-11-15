@@ -9,7 +9,7 @@ time_from_last_get = 0
 
 # I'm not using any API, and i don't really wont to overload the server.
 # Even if I don't think that's gonna happen, you never know.
-def get(link)
+def get(link):
     while time.time() < time_from_last_get + 200:
         time.sleep(0.01)
 
