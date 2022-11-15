@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import click, os, sys, html
+import click, os, sys, html, time
 import requests as req
 from loguru import logger
 
@@ -10,7 +10,10 @@ time_from_last_get = 0
 # I'm not using any API, and i don't really wont to overload the server.
 # Even if I don't think that's gonna happen, you never know.
 def get(link):
-    while time.time() < time_from_last_get + 200:
+    logger.debug(f"making request to {link}")
+
+    global time_from_last_get
+    while time.time() * 1000 < time_from_last_get + 200: # Maybe 200ms is too mutch?
         time.sleep(0.01)
 
     res = req.get(link)
@@ -25,10 +28,6 @@ def getValidFilename(name):
     invalid = '!\"$%#/\0'
     return "".join([ c for c in name if c not in invalid ])
 
-def getArtistPage(artist):
-    logger.debug(f"making request to {base_link}/artists/{getLinkName(artist)}")
-    return get(f"{base_link}/artists/{getLinkName(artist)}").text
-
 def getAlbumsList(artist_page):
     logger.info("Searching for albums...")
 
@@ -39,8 +38,6 @@ def getAlbumsList(artist_page):
         logger.debug("artist has more than 6 albums, loading albums list page")
         
         albums_list_link = artist_page[artist_page.find("/artists/albums?for_artist_page="):].split('"')[0]
-        
-        logger.debug(f"making request to {base_link}/{albums_list_link}")
         artist_page = get(f"{base_link}{albums_list_link}").text
 
         pattern = 'class="album_link"'
@@ -63,11 +60,9 @@ def getAlbumsList(artist_page):
 def getSongsList(album):
     logger.debug(f"getting songs list for {album['name']}")
 
-    songs = []
-
-    logger.debug(f"Making request to {album['link']}")
     album_page = get(album['link']).text
-    
+
+    songs = []    
     pattern = "u-display_block"
     logger.debug(f"number of songs found: {album_page.count(pattern)}")
     for i in range(album_page.count(pattern)):
@@ -89,7 +84,6 @@ def getSongsList(album):
     return songs
 
 def downloadSong(song_page_link):
-    logger.debug(f"making request to {song_page_link}")
     song_page = get(song_page_link).text
 
     pattern = '<div data-lyrics-container="true"'
@@ -145,7 +139,7 @@ def main(artist: str, album: str, song: str, debug: bool):
 
     flag = False
 
-    artist_page = getArtistPage(artist)
+    artist_page = get(f"{base_link}/artists/{getLinkName(artist)}").text
     albums_list = getAlbumsList(artist_page)
 
     if len(albums_list) == 0:
