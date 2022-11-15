@@ -5,6 +5,18 @@ import requests as req
 from loguru import logger
 
 base_link = "https://genius.com"
+time_from_last_get = 0
+
+# I'm not using any API, and i don't really wont to overload the server.
+# Even if I don't think that's gonna happen, you never know.
+def get(link)
+    while time.time() < time_from_last_get + 200:
+        time.sleep(0.01)
+
+    res = req.get(link)
+    time_from_last_get = int(time.time() * 1000)
+
+    return res
 
 def getLinkName(name):
     return name.replace("(", "").replace(")", "").replace("&", "and").replace(" ", "-").replace(".", '.')
@@ -15,7 +27,7 @@ def getValidFilename(name):
 
 def getArtistPage(artist):
     logger.debug(f"making request to {base_link}/artists/{getLinkName(artist)}")
-    return req.get(f"{base_link}/artists/{getLinkName(artist)}").text
+    return get(f"{base_link}/artists/{getLinkName(artist)}").text
 
 def getAlbumsList(artist_page):
     logger.info("Searching for albums...")
@@ -29,7 +41,7 @@ def getAlbumsList(artist_page):
         albums_list_link = artist_page[artist_page.find("/artists/albums?for_artist_page="):].split('"')[0]
         
         logger.debug(f"making request to {base_link}/{albums_list_link}")
-        artist_page = req.get(f"{base_link}{albums_list_link}").text
+        artist_page = get(f"{base_link}{albums_list_link}").text
 
         pattern = 'class="album_link"'
         name_pos = 4
@@ -54,7 +66,7 @@ def getSongsList(album):
     songs = []
 
     logger.debug(f"Making request to {album['link']}")
-    album_page = req.get(album['link']).text
+    album_page = get(album['link']).text
     
     pattern = "u-display_block"
     logger.debug(f"number of songs found: {album_page.count(pattern)}")
@@ -78,7 +90,7 @@ def getSongsList(album):
 
 def downloadSong(song_page_link):
     logger.debug(f"making request to {song_page_link}")
-    song_page = req.get(song_page_link).text
+    song_page = get(song_page_link).text
 
     pattern = '<div data-lyrics-container="true"'
     lyrics = ''
