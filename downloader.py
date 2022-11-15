@@ -58,7 +58,7 @@ def getAlbumsList(artist_page):
     return albums_list
 
 def getSongsList(album):
-    logger.debug(f"getting songs list for {album['name']}")
+    logger.debug(f"getting songs list for '{album['name']}'")
 
     album_page = get(album['link']).text
 
@@ -147,15 +147,15 @@ def main(artist: str, album: str, song: str, debug: bool):
         return
 
     for album_data in albums_list:
-        if album is not None and getLinkName(album) != getLinkName(album_data['name']): continue
-        logger.info(f"downloading album {album_data['name']}...")
+        if album is not None and getLinkName(album).upper() != getLinkName(album_data['name']).upper(): continue
+        logger.info(f"downloading album '{album_data['name']}'...")
 
         os.makedirs(f"lyrics/{artist}/{album_data['name']}", exist_ok = True)
 
         songs = getSongsList(album_data)
         for song_data in songs:
-            if song is not None and getLinkName(song) != getLinkName(song_data['name']): continue
-            logger.debug(f"Downloading song {song_data['name']}")
+            if song is not None and getLinkName(song).upper() != getLinkName(song_data['name']).upper(): continue
+            logger.debug(f"Downloading song '{song_data['name']}'")
             flag = True
 
             lyrics = downloadSong(song_data['link'])
