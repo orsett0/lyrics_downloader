@@ -22,4 +22,4 @@ You also need to specify names between quotation marks if they contain spaces or
 
 Nothing special. Just add the possibility to pass directly a link as a parameter (for songs, albums, or artists).
 
-** DISCLAIMER: if you're looking into the code and it looks bad, I know. I wrote this at 3AM and the next day i tried to clean it but it looks bad to me too.
+**DISCLAIMER: if you're looking into the code and it looks bad, I know. I wrote this at 3AM and the next day i tried to clean it but it looks bad to me too.**
