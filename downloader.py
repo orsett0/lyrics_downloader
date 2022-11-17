@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+#
+# Copyright (C) 2022 Alessio Orsini <alessiorsini.ao@proton.me>
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
 
 import click, os, sys, html, time
 import requests as req
