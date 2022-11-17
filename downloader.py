@@ -25,19 +25,25 @@ def get(link):
 
     return res
 
+# This replaces some characters from a string to match the pattern I saw used in genius links.
+# I did not test this quite enough to see if this gets it always right.
 def getLinkName(name):
-    return name.replace("(", "").replace(")", "").replace("&", "and").replace(" ", "-").replace(".", '.')
+    return name.replace("(", "").replace(")", "").replace("&", "and").replace(" ", "-").replace(".", '-')
 
+# Simply strips invalid (linux) file name character from the string
 def getValidFilename(name):
     invalid = '!\"$%#/\0'
     return "".join([ c for c in name if c not in invalid ])
 
+# Parses the artist page to get a list of the albums.
 def getAlbumsList(artist_page):
     logger.info("Searching for albums...")
 
     pattern = 'class="vertical_album_card"'
     name_pos = 3
 
+    # if the artist has less than six albums, they will all be showed in the preview,
+    # but if they're more then a page will be generated and I'll need to search trough that.
     if artist_page.find("/artists/albums?for_artist_page=") != -1:
         logger.debug("artist has more than 6 albums, loading albums list page")
         
@@ -61,6 +67,7 @@ def getAlbumsList(artist_page):
     logger.debug(f"Number of albums found: {len(albums_list)}")
     return albums_list
 
+# For every album page, this returns a list of all the songs.
 def getSongsList(album):
     logger.debug(f"getting songs list for '{album['name']}'")
 
@@ -77,6 +84,7 @@ def getSongsList(album):
         try: song_page_link = useful.split('\"')[1]
         except IndexError: pass
         # ! I DONT FKING KNOW WHY IT THROWS AN INDEXERROR BUT IT STILL WORKS SO FCK IT
+        # Maybe Ishould test this to see what is going wrong
 
         songs.append({
             'name': song_name,
@@ -87,6 +95,7 @@ def getSongsList(album):
     
     return songs
 
+# This parses the songs page to estrapolate the lyrics.
 def downloadSong(song_page_link):
     song_page = get(song_page_link).text
 
@@ -103,6 +112,11 @@ def downloadSong(song_page_link):
         song_page = song_page[2:]
 
     return html.unescape(lyrics)
+
+# Checks an album or song against the one the user specified (if any)
+# returns true if there's a match
+def choosenOne(test, ctrl):
+    return ctrl is not None and getLinkName(ctrl).upper() == getLinkName(test).upper()
 
 @click.command()
 @click.option(
@@ -147,18 +161,18 @@ def main(artist: str, album: str, song: str, debug: bool):
     albums_list = getAlbumsList(artist_page)
 
     if len(albums_list) == 0:
-        logger.warning("No album found. Check your parameters.")
+        logger.warning("No album found. Check your parameters. (or the code, idk)")
         return
 
     for album_data in albums_list:
-        if album is not None and getLinkName(album).upper() != getLinkName(album_data['name']).upper(): continue
+        if not choosenOne(album_data['name'], album): continue
         logger.info(f"downloading album '{album_data['name']}'...")
 
         os.makedirs(f"lyrics/{artist}/{album_data['name']}", exist_ok = True)
 
         songs = getSongsList(album_data)
         for song_data in songs:
-            if song is not None and getLinkName(song).upper() != getLinkName(song_data['name']).upper(): continue
+            if not choosenOne(song_data['name'], song): continue
             logger.debug(f"Downloading song '{song_data['name']}'")
             flag = True
 
@@ -167,6 +181,6 @@ def main(artist: str, album: str, song: str, debug: bool):
                 file.write(lyrics)
     
     if not flag:
-        logger.warning("No song downloaded. Check your parameters.")
+        logger.warning("No song downloaded. Check your parameters. (or the code, idk)")
 
 if __name__ == '__main__': main()
