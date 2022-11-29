@@ -28,6 +28,7 @@ def get(link):
 # This replaces some characters from a string to match the pattern I saw used in genius links.
 # I did not test this quite enough to see if this gets it always right.
 def getLinkName(name):
+    if name is None: return ""
     return name.replace("(", "").replace(")", "").replace("&", "and").replace(" ", "-").replace(".", '-')
 
 # Simply strips invalid (linux) file name character from the string
@@ -116,7 +117,7 @@ def downloadSong(song_page_link):
 # Checks an album or song against the one the user specified (if any)
 # returns true if there's a match
 def choosenOne(test, ctrl):
-    return ctrl is not None and getLinkName(ctrl).upper() == getLinkName(test).upper()
+    return ctrl is None or getLinkName(ctrl).upper() == getLinkName(test).upper()
 
 @click.command()
 @click.option(
@@ -159,6 +160,8 @@ def main(artist: str, album: str, song: str, debug: bool):
 
     artist_page = get(f"{base_link}/artists/{getLinkName(artist)}").text
     albums_list = getAlbumsList(artist_page)
+
+    print(albums_list)
 
     if len(albums_list) == 0:
         logger.warning("No album found. Check your parameters. (or the code, idk)")
